@@ -1,6 +1,229 @@
-<html>
-  <title>마리오</title>
-  <body>
-    <h1>Hello World</h1>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>마리오 게임</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #container {
+      position: absolute;
+      width: 100%;
+      height: 1000px;
+      background-image: url('asset/bg.gif');
+      background-size: 100% 1000px;
+      border: 1px solid black;
+    }
+
+    #mario {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      bottom: 150px;
+      left: 50px;
+    }
+
+    #enemy {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      bottom: 150px;
+      right: 50px;
+    }
+
+    #bomb {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      bottom: 150px;
+
+    }
+
+    #scoreTab {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: rgb(83, 97, 87);
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="scoreTab">점수 : <span id="score">0</span></div>
+    <img id="mario" src="asset/mario.gif" alt="">
+    <img id="enemy" src="asset/enemy.gif" alt="">
+    <!-- <img id="bomb" src="asset/bomb2.gif" alt=""> -->
+  </div>
+
+  <script>
+    let mario = $("#mario");
+
+    // 주인공 점프
+    let isJumping = false;
+    function jump() {
+      isJumping = true;
+      mario.animate({
+        bottom: "+=180px"
+      }, 300).animate({
+        bottom: "-=180px"
+      }, 300, function () {
+        isJumping = false;
+      });
+    }
+
+    // 주인공 앞뒤이동
+    let isAnimating = false;
+    function goBack(dist){
+      if (isAnimating == false) {
+        isAnimating = true;
+        mario.animate(dist, 100, function() {
+          isAnimating = false;
+        });
+      };
+    }
+
+    // // 등껍질 투척
+    // let isBomb = false;
+    // function bomb(){
+    //   isBomb = true;
+    //   $("#bomb").animate({
+    //     left: "+=100%"
+    //   }, 1000, function (){
+    //     $("#bomb").css("left", "50px");
+    //   });
+    // }
+
+    // 점수 증가
+    var score = 0;
+
+    function scorePlus() {
+      $("#score").text(score);
+    }
+
+    // 점수 초기화
+    function scoreInit() {
+      score = 0;
+      $("#score").text(score);
+    }
+
+    // 마리오 사망 체크, 점수
+    function deadCheck() {
+      let isDead = false;
+      let score = true;
+
+      let mario = $("#mario");
+      let enemy = $("#enemy");
+
+      let marioRightX = 
+        parseInt(mario.css("left").replace("px", "")) + 
+        parseInt(mario.css("width").replace("px", "") - 10
+      );
+
+      let marioLeftX = 
+        parseInt(mario.css("left").replace("px", "") 
+      );
+
+      let marioBottomY = 
+        parseInt(mario.css("bottom").replace("px", "")
+      );
+
+      let enemyLeftX = 
+       parseInt(enemy.css("left").replace("px", "")
+      );
+
+      let enemyRightX = 
+      parseInt(enemy.css("left").replace("px", "")) + 
+      parseInt(enemy.css("width").replace("px", "") - 10
+      );
+
+      let enemyTopY = 
+        parseInt(enemy.css("bottom").replace("px", "")) + 
+        parseInt(enemy.css("height").replace("px", "")
+      );
+
+      if (marioRightX > enemyLeftX && marioLeftX < enemyLeftX && marioBottomY < enemyTopY) {
+        isDead = true;
+        return isDead;
+      } else if (marioRightX > enemyLeftX && marioLeftX < enemyRightX && marioBottomY > enemyTopY){
+        score = false;
+        return score;
+      }
+    }
+
+    // 키이벤트
+    $("body").keydown(function (event) {
+      switch (event.code) {
+        // 스페이스바 누르면 점프
+        case "Space":
+          // 스페이스 연타 방지
+          if (isJumping == false) {
+            jump();
+          }
+          break;
+        // 왼쪽 방향키
+        case "KeyA":
+        case "ArrowLeft":
+          goBack({
+            left: "-=40px"
+          });
+          break;
+        // 오른쪽 방향키
+        case "KeyD":
+        case "ArrowRight":
+          goBack({
+            left: "+=40px"
+          });
+          break;
+        // // z키(공격)
+        // case "KeyZ":
+        //   bomb({
+        //     left: "105%"
+        //   });
+        //   break;
+      }
+    });
+
+    // 마리오 위치 초기화
+    function marioInit() {
+      mario.animate({
+        left: "50px"
+      }, 100);
+    }
+
+
+    // 적 이동(속도 랜덤)
+    function enemyMove() {
+      const rand1 = Math.floor(Math.random()*7000);
+      $("#enemy").animate({
+        right: "110%"
+      }, rand1, function (){
+        score +=100;
+        $("#enemy").css("right", "-100px");
+      });
+    }
+
+
+    // 대략 30frame 화면 갱신
+    setInterval(function () {
+      // 적 이동
+      enemyMove();
+      
+      // 죽었는지 체크
+      if (deadCheck()){
+        alert("마리오 사망");
+        scoreInit();
+        marioInit();
+      };
+
+      if (deadCheck() == false){
+        scorePlus();
+      };
+    }, 33);
+  </script>
+</body>
 </html>
